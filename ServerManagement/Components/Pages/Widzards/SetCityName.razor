@@ -1,11 +1,11 @@
 ﻿@page "/cityname"
-@using Microsoft.AspNetCore.Authorization
-@using ServerManagement.StateStore
 
 @rendermode InteractiveServer
 
 @attribute [Authorize]
 
+@using Microsoft.AspNetCore.Authorization
+@using ServerManagement.StateStore
 @inherits ComponentBase
 
 @inject NavigationManager NavigationManager
@@ -27,7 +27,7 @@
             <input type="text" @bind-value="server.City" class="form-control"></input>
         </Control>
     </FieldComponent>
-    <br />
+    <br/>
     <button type="button" class="btn btn-primary" @onclick="GoNext">Next</button>
 }
 
@@ -45,7 +45,7 @@
     {
         if (firstRender)
         {
-            this.server = this.containerStorage.GetServer();
+            server = containerStorage.GetServer();
             StateHasChanged();
         }
     }
@@ -56,7 +56,7 @@
         {
             if (string.IsNullOrWhiteSpace(server.City))
             {
-                this.errorMessage = "City Name is required.";
+                errorMessage = "City Name is required.";
             }
             else
             {
@@ -65,4 +65,5 @@
             }
         }
     }
+
 }

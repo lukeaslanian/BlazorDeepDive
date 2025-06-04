@@ -1,24 +1,23 @@
-﻿namespace ServerManagement.StateStore
+﻿namespace ServerManagement.StateStore;
+
+public class Observer
 {
-    public class Observer
+    protected Action? _listeners;
+
+    public void AddStateChangeListeners(Action? listener)
     {
-        protected Action? _listeners;
+        if (listener is not null)
+            _listeners += listener;
+    }
 
-        public void AddStateChangeListeners(Action? listener)
-        {
-            if (listener is not null)
-                _listeners += listener;
-        }
+    public void RemoveStateChangeListeners(Action? listener)
+    {
+        if (listener is not null)
+            _listeners -= listener;
+    }
 
-        public void RemoveStateChangeListeners(Action? listener)
-        {
-            if (listener is not null) 
-                _listeners -= listener;
-        }
-
-        public void BroadcastStateChange()
-        {
-            _listeners?.Invoke();
-        }
+    public void BroadcastStateChange()
+    {
+        _listeners?.Invoke();
     }
 }

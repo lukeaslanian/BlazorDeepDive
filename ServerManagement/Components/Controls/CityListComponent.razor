@@ -5,30 +5,27 @@
         <div class="row w-50">
             @foreach (var city in cities)
             {
-                <CityComponent 
+                <CityComponent
                     city="@city"
                     selectedCity="@selectedCity"
-                   SelectCityCallback="HandleCitySelection"></CityComponent>
+                    SelectCityCallback="HandleCitySelection"></CityComponent>
             }
         </div>
     </div>
-
 }
 
 @code {
 
-    [Parameter]
-    public EventCallback<string> SelectCityCallback { get; set; }
+    [Parameter] public EventCallback<string> SelectCityCallback { get; set; }
 
     public void ClearSelection()
     {
-        this.selectedCity = string.Empty;
+        selectedCity = string.Empty;
     }
 
-    [Parameter]
-    public string selectedCity { get; set; } = "Toronto";
+    [Parameter] public string selectedCity { get; set; } = "Toronto";
 
-    private List<String> cities = CitiesRepository.GetCities();
+    private readonly List<string> cities = CitiesRepository.GetCities();
 
     private void HandleCitySelection(string cityName)
     {

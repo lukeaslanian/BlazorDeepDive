@@ -1,19 +1,17 @@
-﻿namespace ServerManagement.StateStore
+﻿namespace ServerManagement.StateStore;
+
+public class HalifaxOnlineServersStore : Observer
 {
-    public class HalifaxOnlineServersStore : Observer
+    private int _numServersOnline;
+
+    public int GetNumberServersOnline()
     {
-        private int _numServersOnline;
+        return _numServersOnline;
+    }
 
-        public int GetNumberServersOnline()
-        {
-            return _numServersOnline;
-        }
-
-        public void SetNumbersServersOnline(int number)
-        {
-            _numServersOnline = number;
-            base.BroadcastStateChange();
-        }
-
+    public void SetNumbersServersOnline(int number)
+    {
+        _numServersOnline = number;
+        BroadcastStateChange();
     }
 }

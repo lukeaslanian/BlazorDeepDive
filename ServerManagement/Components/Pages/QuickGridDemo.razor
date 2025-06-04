@@ -7,10 +7,10 @@
 @inject IServersEFCoreRepository ServersEFCoreRepository
 
 <h3>QuickGrid Demo</h3>
-<br />
+<br/>
 
 @if (servers != null)
-{    
+{
     <QuickGrid Items="servers.AsQueryable()" Pagination="paginationState">
         <PropertyColumn Property="s => s.Name"></PropertyColumn>
         <PropertyColumn Property="s => s.City" Sortable="true"></PropertyColumn>
@@ -31,8 +31,8 @@
         <TemplateColumn Title="People Online">
             @if (context.IsOnline)
             {
-                Random random = new Random();
-                int randomNumber = random.Next(0, 500);
+                var random = new Random();
+                var randomNumber = random.Next(0, 500);
                 <text>@randomNumber</text>
             }
             else
@@ -45,7 +45,7 @@
             {
                 <button type="button"
                         class="btn btn-outline-danger"
-                        @onclick="@(()=> {context.IsOnline = false;})">
+                        @onclick="@(() => { context.IsOnline = false; })">
                     Turn Off
                 </button>
             }
@@ -53,7 +53,7 @@
             {
                 <button type="button"
                         class="btn btn-outline-success"
-                        @onclick="@(()=> {context.IsOnline = true;})">
+                        @onclick="@(() => { context.IsOnline = true; })">
                     Turn On
                 </button>
             }
@@ -68,7 +68,7 @@
                           OnValidSubmit="@(() => { DeleteServer(server.ServerId); })">
                     <button type="submit" class="btn btn-primary">Delete</button>
                 </EditForm>
-            </ChildContent>            
+            </ChildContent>
         </TemplateColumn>
     </QuickGrid>
     <Paginator State="paginationState"></Paginator>
@@ -78,7 +78,7 @@
 @code {
     private List<Server>? servers;
 
-    private PaginationState paginationState = new PaginationState { ItemsPerPage = 5 };
+    private readonly PaginationState paginationState = new() { ItemsPerPage = 5 };
 
     protected override void OnAfterRender(bool firstRender)
     {
@@ -96,4 +96,5 @@
             NavigationManager.NavigateTo("/quickgrid", true);
         }
     }
+
 }

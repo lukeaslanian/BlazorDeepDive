@@ -1,13 +1,18 @@
 ﻿using ServerManagement.Models;
 
-namespace ServerManagement.StateStore
+namespace ServerManagement.StateStore;
+
+public class ContainerStorage
 {
-    public class ContainerStorage
+    private Server _server = new();
+
+    public Server GetServer()
     {
-        private Server _server = new Server();
+        return _server;
+    }
 
-        public Server GetServer() { return _server; }
-
-        public void SetServer(Server server) { _server = server; }
+    public void SetServer(Server server)
+    {
+        _server = server;
     }
 }

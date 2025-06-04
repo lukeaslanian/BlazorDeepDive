@@ -1,5 +1,4 @@
-﻿
-@inherits BaseComponent
+﻿@inherits BaseComponent
 
 @implements IDisposable
 
@@ -16,7 +15,7 @@ else
     <table class="table table-striped">
         <RepeaterComponent Items="servers">
             <Header>
-            <thead>
+                <thead>
                 <tr>
                     <th>
                         Name
@@ -33,7 +32,7 @@ else
                     <th></th>
                     <th></th>
                 </tr>
-            </thead>
+                </thead>
             </Header>
             <Row Context="server">
                 <ServerComponent Server="server"></ServerComponent>
@@ -45,37 +44,34 @@ else
 
 @code {
 
-    [Parameter]
-    public string? CityName { get; set; }
+    [Parameter] public string? CityName { get; set; }
 
-    [Parameter]
-    public string SearchFilter { get; set; } = "";        
+    [Parameter] public string SearchFilter { get; set; } = "";
 
     private List<Server>? servers;
-
-    private System.Threading.Timer? Timer;
+    private string? lastCityName;
+    private string lastSearchFilter = "";
 
     private PersistingComponentStateSubscription persistingSubscription;
 
     public override Task SetParametersAsync(ParameterView parameters)
     {
-        var guid = Guid.NewGuid();
-        Console.WriteLine($"{this.GetType().Name}: {nameof(SetParametersAsync)} : {guid}");
+        // Only update if parameters actually changed
+        var hasChanges = false;
 
-        if (parameters.TryGetValue<string>("CityName", out var cityName))
+        if (parameters.TryGetValue<string>("CityName", out var cityName) && cityName != CityName)
         {
-            if (cityName != CityName)
-            {
-                base.SetParametersAsync(parameters);
-            }
+            hasChanges = true;
         }
 
-        if (parameters.TryGetValue<string>("SearchFilter", out var searchFilter))
+        if (parameters.TryGetValue<string>("SearchFilter", out var searchFilter) && searchFilter != SearchFilter)
         {
-            if (searchFilter != SearchFilter)
-            {
-                base.SetParametersAsync(parameters);
-            }
+            hasChanges = true;
+        }
+
+        if (hasChanges)
+        {
+            return base.SetParametersAsync(parameters);
         }
 
         return Task.CompletedTask;
@@ -83,76 +79,59 @@ else
 
     protected override void OnParametersSet()
     {
-        var guid = Guid.NewGuid();
-        Console.WriteLine($"{this.GetType().Name}: {nameof(OnParametersSet)} : {guid}");
-        
-        if (string.IsNullOrWhiteSpace(this.SearchFilter))
+        // Only reload data if parameters actually changed
+        if (CityName != lastCityName || SearchFilter != lastSearchFilter)
         {
-            servers = ServersEFCoreRepository.GetServersByCity(CityName ?? "Toronto");
+            LoadServerData();
+            lastCityName = CityName;
+            lastSearchFilter = SearchFilter;
         }
-        else
-        {
-            servers = ServersEFCoreRepository.SearchServers(this.SearchFilter);
-        }
-                
-    }    
+    }
 
     protected override void OnInitialized()
     {
-        var guid = Guid.NewGuid();
-        Console.WriteLine($"{this.GetType().Name}: {nameof(OnInitialized)} : {guid}");
+        persistingSubscription = ApplicationState.RegisterOnPersisting(PersistData);
 
-        persistingSubscription =
-            ApplicationState.RegisterOnPersisting(PersistData);
-
-        if (!ApplicationState.TryTakeFromJson <List<Server>?> (
-            "Servers", out var restored))
+        if (!ApplicationState.TryTakeFromJson<List<Server>?>("Servers", out var restored))
         {
-            if (string.IsNullOrWhiteSpace(this.SearchFilter))
-            {
-                servers = ServersEFCoreRepository.GetServersByCity(CityName ?? "Toronto");
-            }
-            else
-            {
-                servers = ServersEFCoreRepository.SearchServers(this.SearchFilter);
-            }
+            LoadServerData();
         }
         else
         {
             servers = restored!;
         }
 
-        Timer = new System.Threading.Timer(_ =>
-            {
-                base.InvokeAsync(StateHasChanged);
-            }, null, 5000, 5000);
+        // Removed the timer that was causing unnecessary re-renders every 5 seconds
+        // Timer was causing performance issues
+    }
+
+    private void LoadServerData()
+    {
+        if (string.IsNullOrWhiteSpace(SearchFilter))
+        {
+            servers = ServersEFCoreRepository.GetServersByCity(CityName ?? "Toronto");
+        }
+        else
+        {
+            servers = ServersEFCoreRepository.SearchServers(SearchFilter);
+        }
     }
 
     private Task PersistData()
     {
         ApplicationState.PersistAsJson("Servers", servers);
-
         return Task.CompletedTask;
     }
 
     protected override bool ShouldRender()
     {
-        var guid = Guid.NewGuid();
-        Console.WriteLine($"{this.GetType().Name}: {nameof(ShouldRender)} : {guid}");
-
+        // Only render if we have actual changes
         return base.ShouldRender();
     }
 
-    protected override void OnAfterRender(bool firstRender)
-    {
-        base.OnAfterRender(firstRender);
-
-        var guid = Guid.NewGuid();
-        Console.WriteLine($"{this.GetType().Name}: {nameof(OnAfterRender)} : {guid}");
-    }
-    
     void IDisposable.Dispose()
     {
         persistingSubscription.Dispose();
     }
+
 }

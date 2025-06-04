@@ -17,15 +17,13 @@
         <td>
             @Server.City
         </td>
-        <td style="color:@((Server.IsOnline ? "green" : "red"))">
+        <td style="color:@(Server.IsOnline ? "green" : "red")">
             @(Server.IsOnline ? "online" : "offline")
         </td>
         <td>
             @if (Server.IsOnline)
             {
-                Random random = new Random();
-                int randomNumber = random.Next(0, 500);
-                <text>@randomNumber</text>
+                <text>@cachedRandomNumber</text>
             }
             else
             {
@@ -37,7 +35,7 @@
             {
                 <button type="button"
                         class="btn btn-outline-danger"
-                        @onclick="@(()=> {SetServerStatus(false);})">
+                        @onclick="@(() => { SetServerStatus(false); })">
                     Turn Off
                 </button>
             }
@@ -45,7 +43,7 @@
             {
                 <button type="button"
                         class="btn btn-outline-success"
-                        @onclick="@(()=> {SetServerStatus(true);})">
+                        @onclick="@(() => { SetServerStatus(true); })">
                     Turn On
                 </button>
             }
@@ -65,12 +63,22 @@
 
 
 @code {
+    private static readonly Random random = new();
+    private int cachedRandomNumber;
 
-    [Parameter]
-    public Server? Server { get; set; }     
+    [Parameter] public Server? Server { get; set; }
 
     [CascadingParameter(Name = "SelectedCity")]
     public string? SelectedCity { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        // Generate random number once when server changes, not on every render
+        if (Server?.IsOnline == true)
+        {
+            cachedRandomNumber = random.Next(0, 500);
+        }
+    }
 
     private void DeleteServer(int serverId)
     {
@@ -83,34 +91,25 @@
 
     private string GetBackgroundColor()
     {
-        if (SelectedCity != null)
+        return SelectedCity switch
         {
-            switch (this.SelectedCity)
-            {
-                case "Toronto": return "powderblue";
-                case "Montreal": return "lightgray";
-                case "Ottawa": return "palegreen";
-                case "Calgary": return "pink";
-                case "Halifax": return "white";
-                default:
-                    return "white";
-            }
-        }
-        else
-        {
-            return "white";
-        }
-
+            "Toronto" => "powderblue",
+            "Montreal" => "lightgray",
+            "Ottawa" => "palegreen",
+            "Calgary" => "pink",
+            "Halifax" => "white",
+            _ => "white"
+        };
     }
 
     private void SetServerStatus(bool status)
     {
-        if (this.Server is not null)
+        if (Server is not null)
         {
-            if (this.Server.IsOnline != status)
+            if (Server.IsOnline != status)
             {
-                int num = 0;
-                switch (this.Server.City)
+                var num = 0;
+                switch (Server.City)
                 {
                     case "Toronto":
                         num = TorontoOnlineServersStore.GetNumberServersOnline();
@@ -149,11 +148,17 @@
                         break;
                 }
 
-                this.Server.IsOnline = status;
+                Server.IsOnline = status;
 
-                ServersEFCoreRepository.UpdateServer(this.Server.ServerId, Server);
-            }            
+                ServersEFCoreRepository.UpdateServer(Server.ServerId, Server);
+
+                // Update cached random number when status changes
+                if (status)
+                {
+                    cachedRandomNumber = random.Next(0, 500);
+                }
+            }
         }
-        
     }
+
 }

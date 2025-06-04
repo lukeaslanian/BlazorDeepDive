@@ -1,11 +1,11 @@
 ﻿@page "/servername"
-@using Microsoft.AspNetCore.Authorization
-@using ServerManagement.StateStore
 
 @rendermode InteractiveServer
 
 @attribute [Authorize]
 
+@using Microsoft.AspNetCore.Authorization
+@using ServerManagement.StateStore
 @inherits BaseComponent
 
 @inject NavigationManager NavigationManager
@@ -58,13 +58,13 @@
         {
             if (string.IsNullOrWhiteSpace(server.Name))
             {
-                this.errorMessage = "Server Name is required.";
+                errorMessage = "Server Name is required.";
             }
             else
             {
                 containerStorage.SetServer(server);
                 NavigationManager.NavigateTo("/cityname");
-            }            
+            }
         }
     }
 

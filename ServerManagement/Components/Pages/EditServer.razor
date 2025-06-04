@@ -36,9 +36,9 @@
         <FieldComponent Label="Online">
             <Control>
                 <InputCheckbox @bind-Value="server.IsOnline" class="form-check-input"></InputCheckbox>
-            </Control>            
+            </Control>
         </FieldComponent>
-        
+
         <br/>
         <button class="btn btn-primary" type="submit">Update</button>
         &nbsp;
@@ -49,15 +49,13 @@
 
 @code {
 
-    [Parameter]
-    public int Id { get; set; }
+    [Parameter] public int Id { get; set; }
 
-    [SupplyParameterFromForm]
-    private Server? server { get; set; }
+    [SupplyParameterFromForm] private Server? server { get; set; }
 
     protected override void OnParametersSet()
     {
-        server ??= ServersEFCoreRepository.GetServerById(this.Id);
+        server ??= ServersEFCoreRepository.GetServerById(Id);
     }
 
     private void Submit()
@@ -67,8 +65,7 @@
             ServersEFCoreRepository.UpdateServer(server.ServerId, server);
         }
 
-        NavigationManager.NavigateTo($"/servers/back_from/{this.server?.City}");        
-        
+        NavigationManager.NavigateTo($"/servers/back_from/{server?.City}");
     }
 
 }

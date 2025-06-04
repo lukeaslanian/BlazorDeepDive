@@ -1,11 +1,11 @@
 ﻿@page "/serverstatus"
-@using Microsoft.AspNetCore.Authorization
-@using ServerManagement.StateStore
 
 @rendermode InteractiveServer
 
 @attribute [Authorize]
 
+@using Microsoft.AspNetCore.Authorization
+@using ServerManagement.StateStore
 @inherits ComponentBase
 
 @inject NavigationManager NavigationManager
@@ -13,7 +13,7 @@
 @inject IServersEFCoreRepository ServersEFCoreRepository
 
 <h3>Server Status</h3>
-<br />
+<br/>
 @if (!string.IsNullOrWhiteSpace(errorMessage))
 {
     <div class="alert alert-danger">
@@ -29,7 +29,7 @@
             {
                 <input type="checkbox"
                        @bind-value="server.IsOnline"
-                        checked class="form-check-input"></input>
+                       checked class="form-check-input"></input>
             }
             else
             {
@@ -40,7 +40,7 @@
 
         </Control>
     </FieldComponent>
-    <br />
+    <br/>
     <button type="button" class="btn btn-primary" @onclick="Save">Save</button>
 }
 
@@ -53,7 +53,7 @@
     {
         if (firstRender)
         {
-            this.server = this.containerStorage.GetServer();
+            server = containerStorage.GetServer();
             StateHasChanged();
         }
     }
@@ -61,10 +61,11 @@
     private void Save()
     {
         if (server is not null)
-        {   
+        {
             containerStorage.SetServer(null);
             ServersEFCoreRepository.AddServer(server);
-            NavigationManager.NavigateTo($"/servers/back_from/{this.server?.City}");
+            NavigationManager.NavigateTo($"/servers/back_from/{server?.City}");
         }
     }
+
 }

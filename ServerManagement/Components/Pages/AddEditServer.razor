@@ -24,7 +24,7 @@ else
         @if (server.ServerId > 0)
         {
             <InputNumber @bind-Value="server.ServerId" hidden></InputNumber>
-        }        
+        }
 
         <FieldComponent Label="Name">
             <Control>
@@ -50,7 +50,7 @@ else
             </Control>
         </FieldComponent>
 
-        <br />
+        <br/>
         @if (server.ServerId > 0)
         {
             <button class="btn btn-primary" type="submit">Update</button>
@@ -66,31 +66,29 @@ else
 
 @code {
 
-    [Parameter]
-    public int? Id { get; set; }
+    [Parameter] public int? Id { get; set; }
 
-    [SupplyParameterFromForm]
-    private Server? server { get; set; }
+    [SupplyParameterFromForm] private Server? server { get; set; }
 
     protected override void OnParametersSet()
     {
-        if (this.Id.HasValue)
-            server ??= ServersEFCoreRepository.GetServerById(this.Id.Value);
+        if (Id.HasValue)
+            server ??= ServersEFCoreRepository.GetServerById(Id.Value);
         else
-            server ??= new Server() { IsOnline = false };
+            server ??= new Server { IsOnline = false };
     }
 
     private void Submit()
     {
         if (server != null)
         {
-            if (this.Id.HasValue)
+            if (Id.HasValue)
                 ServersEFCoreRepository.UpdateServer(server.ServerId, server);
             else
                 ServersEFCoreRepository.AddServer(server);
         }
 
-        NavigationManager.NavigateTo($"/servers/back_from/{this.server?.City}");
-
+        NavigationManager.NavigateTo($"/servers/back_from/{server?.City}");
     }
+
 }

@@ -12,38 +12,51 @@
 @inject CalgaryOnlineServersStore CalgaryOnlineServersStore
 @inject IServersEFCoreRepository ServersEFCoreRepository
 
+<PageTitle>Servers - Server Management</PageTitle>
+
 <h3>Servers</h3>
 <br/>
 <br/>
 
-<CityListComponent 
-    @ref="cityListComponent" 
-    SelectCityCallback="HandleCitySelection"
-    selectedCity="@this.selectedCity"></CityListComponent>
+@if (!isInitialized)
+{
+    <div class="d-flex justify-content-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else
+{
+    <CityListComponent
+        @ref="cityListComponent"
+        SelectCityCallback="HandleCitySelection"
+        selectedCity="@selectedCity"></CityListComponent>
 
-<br />
+    <br/>
 
-<SearchBarComponent 
-    @ref="searchBarComponent" 
-    SearchServerCallback="HandleSearchServer"
-    style="width:500px"></SearchBarComponent>
+    <SearchBarComponent
+        @ref="searchBarComponent"
+        SearchServerCallback="HandleSearchServer"
+        style="width:500px"></SearchBarComponent>
 
-<br/>
+    <br/>
 
-<CascadingValue Name="SelectedCity" Value="@selectedCity">
-    <ServerListComponent         
-        CityName="@this.selectedCity"
-        SearchFilter="@searchFilter"></ServerListComponent>
-</CascadingValue>
+    <CascadingValue Name="SelectedCity" Value="@selectedCity">
+        <ServerListComponent
+            CityName="@selectedCity"
+            SearchFilter="@searchFilter"></ServerListComponent>
+    </CascadingValue>
 
-<p>
-    <a href="/servername" class="btn btn-primary">Add Server</a>
-</p>
+    <p>
+        <a href="/servername" class="btn btn-primary">Add Server</a>
+    </p>
+}
 
 @code {
+    private bool isInitialized;
 
-    [Parameter]
-    public string? CityName { get; set; }
+    [Parameter] public string? CityName { get; set; }
 
     private string selectedCity = "Toronto";
     private string searchFilter = "";
@@ -51,60 +64,73 @@
     private CityListComponent? cityListComponent;
     private SearchBarComponent? searchBarComponent;
 
-    private void HandleSearch()
+    protected override async Task OnInitializedAsync()
     {
-        //this.servers = ServersEFCoreRepository.SearchServers(serverFilter);
+        // Use OnInitializedAsync for better performance with prerendering
+        if (NavigationManager.Uri.Contains("back_from") && !string.IsNullOrWhiteSpace(CityName))
+        {
+            selectedCity = CityName;
+        }
 
-        //this.selectedCity = string.Empty;
+        // Initialize server counts asynchronously in the background
+        await InitializeServerCounts();
+
+        isInitialized = true;
+        StateHasChanged();
     }
 
     private void HandleCitySelection(string cityName)
     {
         selectedCity = cityName;
-
-        this.searchFilter = string.Empty;
+        searchFilter = string.Empty;
         searchBarComponent?.ClearFilter();
     }
 
     private void HandleSearchServer(string searchFilter)
     {
         this.searchFilter = searchFilter;
-
         cityListComponent?.ClearSelection();
     }
 
-    protected override void OnAfterRender(bool firstRender)
+    private async Task InitializeServerCounts()
     {
-        if (firstRender)
+        try
         {
-            if (NavigationManager.Uri.Contains("back_from")
-                && !string.IsNullOrWhiteSpace(CityName))
+            await Task.Run(() =>
             {
-                selectedCity = CityName;                
+                // Get all servers in one database call instead of 5 separate calls
+                var allServers = ServersEFCoreRepository.GetServers();
 
-                StateHasChanged();
-            }
+                // Group by city and count online servers efficiently
+                var cityServerCounts = allServers
+                    .Where(s => s.IsOnline)
+                    .GroupBy(s => s.City)
+                    .ToDictionary(g => g.Key ?? "", g => g.Count());
 
-            //Init state stores
-            var serversToronto = ServersEFCoreRepository.GetServersByCity("Toronto");
-            if (serversToronto is not null)            
-                TorontoOnlineServersStore.SetNumbersServersOnline(serversToronto.Count(x => x.IsOnline));
-
-            var serversMontreal = ServersEFCoreRepository.GetServersByCity("Montreal");
-            if (serversMontreal is not null)
-                MontrealOnlineServersStore.SetNumbersServersOnline(serversMontreal.Count(x => x.IsOnline));
-
-            var serversOttawa = ServersEFCoreRepository.GetServersByCity("Ottawa");
-            if (serversOttawa is not null)
-                OttawaOnlineServersStore.SetNumbersServersOnline(serversOttawa.Count(x => x.IsOnline));
-            
-            var serversCalgary = ServersEFCoreRepository.GetServersByCity("Calgary");
-            if (serversCalgary is not null)
-                CalgaryOnlineServersStore.SetNumbersServersOnline(serversCalgary.Count(x => x.IsOnline));
-
-            var serversHalifax = ServersEFCoreRepository.GetServersByCity("Halifax");
-            if (serversHalifax is not null)
-                HalifaxOnlineServersStore.SetNumbersServersOnline(serversHalifax.Count(x => x.IsOnline));
+                // Update each city store with the count
+                TorontoOnlineServersStore.SetNumbersServersOnline(
+                    cityServerCounts.GetValueOrDefault("Toronto", 0));
+                MontrealOnlineServersStore.SetNumbersServersOnline(
+                    cityServerCounts.GetValueOrDefault("Montreal", 0));
+                OttawaOnlineServersStore.SetNumbersServersOnline(
+                    cityServerCounts.GetValueOrDefault("Ottawa", 0));
+                CalgaryOnlineServersStore.SetNumbersServersOnline(
+                    cityServerCounts.GetValueOrDefault("Calgary", 0));
+                HalifaxOnlineServersStore.SetNumbersServersOnline(
+                    cityServerCounts.GetValueOrDefault("Halifax", 0));
+            });
+        }
+        catch (Exception ex)
+        {
+            // Log error but don't crash the page
+            Console.WriteLine($"Error initializing server counts: {ex.Message}");
+            // Set defaults in case of error
+            TorontoOnlineServersStore.SetNumbersServersOnline(0);
+            MontrealOnlineServersStore.SetNumbersServersOnline(0);
+            OttawaOnlineServersStore.SetNumbersServersOnline(0);
+            CalgaryOnlineServersStore.SetNumbersServersOnline(0);
+            HalifaxOnlineServersStore.SetNumbersServersOnline(0);
         }
     }
+
 }
