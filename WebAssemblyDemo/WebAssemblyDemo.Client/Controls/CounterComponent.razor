@@ -1,10 +1,9 @@
-﻿
-<p role="status">Current count: @currentCount</p>
+﻿<p role="status">Current count: @currentCount</p>
 
 <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
 
 @code {
-    private int currentCount = 0;
+    private int currentCount;
 
     private void IncrementCount()
     {
@@ -16,13 +15,13 @@
         base.OnInitialized();
 
         var guid = Guid.NewGuid();
-        Console.WriteLine($"{this.GetType().Name}: {nameof(OnInitialized)} : {guid}");
+        Console.WriteLine($"{GetType().Name}: {nameof(OnInitialized)} : {guid}");
     }
 
     public override Task SetParametersAsync(ParameterView parameters)
     {
         var guid = Guid.NewGuid();
-        Console.WriteLine($"{this.GetType().Name}: {nameof(SetParametersAsync)} : {guid}");
+        Console.WriteLine($"{GetType().Name}: {nameof(SetParametersAsync)} : {guid}");
 
         return base.SetParametersAsync(parameters);
     }
@@ -32,13 +31,13 @@
         base.OnParametersSet();
 
         var guid = Guid.NewGuid();
-        Console.WriteLine($"{this.GetType().Name}: {nameof(OnParametersSet)} : {guid}");
+        Console.WriteLine($"{GetType().Name}: {nameof(OnParametersSet)} : {guid}");
     }
 
     protected override bool ShouldRender()
     {
         var guid = Guid.NewGuid();
-        Console.WriteLine($"{this.GetType().Name}: {nameof(ShouldRender)} : {guid}");
+        Console.WriteLine($"{GetType().Name}: {nameof(ShouldRender)} : {guid}");
 
         return base.ShouldRender();
     }
@@ -48,6 +47,7 @@
         base.OnAfterRender(firstRender);
 
         var guid = Guid.NewGuid();
-        Console.WriteLine($"{this.GetType().Name}: {nameof(OnAfterRender)} : {guid}");
+        Console.WriteLine($"{GetType().Name}: {nameof(OnAfterRender)} : {guid}");
     }
+
 }

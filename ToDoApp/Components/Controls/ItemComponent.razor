@@ -1,4 +1,5 @@
-﻿@if (Item != null){
+﻿@if (Item != null)
+{
     <li @key="Item.Id">
         <div class="row mb-2">
             <div class="col-1" style="width:30px">
@@ -6,7 +7,7 @@
                        style="vertical-align:middle"
                        class="form-check-input"
                        @bind-value="Item.IsCompleted"
-                       checked="@Item.IsCompleted" />
+                       checked="@Item.IsCompleted"/>
             </div>
             <div class="col">
                 @if (Item.IsCompleted)
@@ -15,14 +16,14 @@
                            style="vertical-align:middle"
                            class="form-control border-0 text-decoration-line-through"
                            @bind-value="Item.Name"
-                           disabled />
+                           disabled/>
                 }
                 else
                 {
                     <input type="text"
                            style="vertical-align:middle"
                            class="form-control border-0"
-                           @bind-value="Item.Name" />
+                           @bind-value="Item.Name"/>
                 }
 
             </div>
@@ -38,7 +39,6 @@
 
 @code {
 
-    [Parameter]
-    public ToDoItem? Item { get; set; }
+    [Parameter] public ToDoItem? Item { get; set; }
 
 }

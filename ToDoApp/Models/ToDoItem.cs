@@ -1,25 +1,21 @@
-﻿namespace ToDoApp.Models
+﻿namespace ToDoApp.Models;
+
+public class ToDoItem
 {
-    public class ToDoItem
+    private bool _isCompleted;
+    public int Id { get; set; }
+    public string Name { get; set; } = "";
+
+    public bool IsCompleted
     {
-        public int Id { get; set; }
-        public string Name { get; set; } = "";
-
-        private bool _isCompleted;
-        public bool IsCompleted
+        get => _isCompleted;
+        set
         {
-            get => _isCompleted;
-            set
-            {
-                _isCompleted = value;
+            _isCompleted = value;
 
-                if (value)
-                {
-                    DateCompleted = DateTime.Now;
-                }
-            }
+            if (value) DateCompleted = DateTime.Now;
         }
-
-        public DateTime DateCompleted { get; set; }
     }
+
+    public DateTime DateCompleted { get; set; }
 }

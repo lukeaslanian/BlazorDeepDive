@@ -1,6 +1,6 @@
 ﻿@page "/wasm/servers"
-@using WebAssemblyDemo.Client.Models
 
+@using WebAssemblyDemo.Client.Models
 @implements IDisposable
 
 @rendermode InteractiveWebAssembly
@@ -10,54 +10,58 @@
 @inject PersistentComponentState ApplicationState
 
 <h3>Servers</h3>
-<br />
-<br />
+<br/>
+<br/>
 
 <table class="table">
     <thead>
-        <tr>
-            <th>
-                Name
-            </th>
-            <th>
-                City
-            </th>
-            <th>
-                Status
-            </th>            
-            <th></th>
-            <th></th>
-        </tr>
+    <tr>
+        <th>
+            Name
+        </th>
+        <th>
+            City
+        </th>
+        <th>
+            Status
+        </th>
+        <th></th>
+        <th></th>
+    </tr>
     </thead>
     <tbody>
-        @if (listServers.Any())
+    @if (listServers.Any())
+    {
+        foreach (var server in listServers)
         {
-            foreach(var server in listServers)
+            @if (server is not null)
             {
-                @if (server is not null)
-                {
-                    <tr>
-                        <td>@server.Name</td>
-                        <td>@server.City</td>
-                        <td>@(server.IsOnline ? "Online" : "Offline")</td>
-                        <td><a class="btn btn-link" href="/wasm/servers/@server.ServerId">Edit</a></td>
-                        <td><button class="btn btn-link" @onclick="@( async ()=> { await Delete(server.ServerId); })">Delete</button></td>
-                    </tr>
-                }
+                <tr>
+                    <td>@server.Name</td>
+                    <td>@server.City</td>
+                    <td>@(server.IsOnline ? "Online" : "Offline")</td>
+                    <td><a class="btn btn-link" href="/wasm/servers/@server.ServerId">Edit</a></td>
+                    <td>
+                        <button class="btn btn-link" @onclick="@(async () => { await Delete(server.ServerId); })">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
             }
         }
-        else
-        {
-            <p><em>Loading...</em></p>
-        }
+    }
+    else
+    {
+        <p><em>Loading...</em></p>
+    }
     </tbody>
 </table>
 <br/>
 <a class="btn btn-primary" href="/wasm/servers/add">Add Server</a>
 
 @code {
-    public List<Server> listServers { get; set; } = new List<Server>();
-    private PersistingComponentStateSubscription persistingSubscription;    
+    public List<Server> listServers { get; set; } = new();
+    private PersistingComponentStateSubscription persistingSubscription;
 
     private async Task Delete(int serverId)
     {
@@ -70,13 +74,13 @@
         await base.OnInitializedAsync();
 
         var guid = Guid.NewGuid();
-        Console.WriteLine($"{this.GetType().Name}: {nameof(OnInitialized)} : {guid}");
+        Console.WriteLine($"{GetType().Name}: {nameof(OnInitialized)} : {guid}");
 
         persistingSubscription =
             ApplicationState.RegisterOnPersisting(PersistData);
 
         if (!ApplicationState.TryTakeFromJson<List<Server>?>(
-            "Servers", out var restored))
+                "Servers", out var restored))
         {
             listServers = await ServersApiRepository.GetServersAsync();
         }
@@ -96,7 +100,7 @@
     public override Task SetParametersAsync(ParameterView parameters)
     {
         var guid = Guid.NewGuid();
-        Console.WriteLine($"{this.GetType().Name}: {nameof(SetParametersAsync)} : {guid}");
+        Console.WriteLine($"{GetType().Name}: {nameof(SetParametersAsync)} : {guid}");
 
         return base.SetParametersAsync(parameters);
     }
@@ -106,13 +110,13 @@
         base.OnParametersSet();
 
         var guid = Guid.NewGuid();
-        Console.WriteLine($"{this.GetType().Name}: {nameof(OnParametersSet)} : {guid}");
+        Console.WriteLine($"{GetType().Name}: {nameof(OnParametersSet)} : {guid}");
     }
 
     protected override bool ShouldRender()
     {
         var guid = Guid.NewGuid();
-        Console.WriteLine($"{this.GetType().Name}: {nameof(ShouldRender)} : {guid}");
+        Console.WriteLine($"{GetType().Name}: {nameof(ShouldRender)} : {guid}");
 
         return base.ShouldRender();
     }
@@ -122,11 +126,12 @@
         base.OnAfterRender(firstRender);
 
         var guid = Guid.NewGuid();
-        Console.WriteLine($"{this.GetType().Name}: {nameof(OnAfterRender)} : {guid}");
+        Console.WriteLine($"{GetType().Name}: {nameof(OnAfterRender)} : {guid}");
     }
 
     void IDisposable.Dispose()
     {
         persistingSubscription.Dispose();
     }
+
 }         

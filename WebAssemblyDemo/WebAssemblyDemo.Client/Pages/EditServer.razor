@@ -50,7 +50,7 @@
                 <InputCheckbox @bind-Value="server.IsOnline" class="form-check-input"></InputCheckbox>
             </div>
         </div>
-        
+
         <br/>
         <button class="btn btn-primary" type="submit">Update</button>
         &nbsp;
@@ -61,14 +61,13 @@
 
 @code {
 
-    [Parameter]
-    public int Id { get; set; }
-    
+    [Parameter] public int Id { get; set; }
+
     private Server? server { get; set; }
 
     protected override async Task OnParametersSetAsync()
     {
-        server ??= await ServersApiRepository.GetServerByIdAsync(this.Id);
+        server ??= await ServersApiRepository.GetServerByIdAsync(Id);
     }
 
     private async Task Submit()
@@ -78,8 +77,7 @@
             await ServersApiRepository.UpdateServerAsync(server.ServerId, server);
         }
 
-        NavigationManager.NavigateTo($"/wasm/servers/");        
-        
+        NavigationManager.NavigateTo("/wasm/servers/");
     }
 
 }
